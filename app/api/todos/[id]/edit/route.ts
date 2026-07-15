@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { revalidatePath } from "next/cache";
 
 export async function PUT(
   request: NextRequest,
@@ -24,6 +25,8 @@ export async function PUT(
         description: description !== undefined ? description : undefined,
       },
     });
+
+    revalidatePath("/");
 
     return NextResponse.json({ success: true, data: todo }, { status: 200 });
   } catch (error) {

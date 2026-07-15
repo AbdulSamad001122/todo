@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import Dashboard from "./components/Dashboard";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const todos = await prisma.todo.findMany({
     orderBy: {

@@ -59,7 +59,6 @@ export default function EditTodoPage({ params }: PageProps) {
       const json = await res.json();
       if (json.success) {
         router.push("/");
-        router.refresh();
       }
     } catch (err: any) {
       alert(err.message || "Failed to update task");
