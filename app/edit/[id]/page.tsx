@@ -18,6 +18,7 @@ export default function EditTodoPage({ params }: PageProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchTodo() {
@@ -48,6 +49,7 @@ export default function EditTodoPage({ params }: PageProps) {
     }
 
     setSubmitting(true);
+    setErrorMessage(null);
     try {
       const res = await fetch(`/api/todos/${id}/edit`, {
         method: "PUT",
@@ -59,9 +61,11 @@ export default function EditTodoPage({ params }: PageProps) {
       const json = await res.json();
       if (json.success) {
         router.push("/");
+      } else {
+        setErrorMessage(json.error || "Failed to update task");
       }
     } catch (err: any) {
-      alert(err.message || "Failed to update task");
+      setErrorMessage(err.message || "Failed to update task");
     } finally {
       setSubmitting(false);
     }
@@ -116,6 +120,20 @@ export default function EditTodoPage({ params }: PageProps) {
               formError ? "animate-shake border-red-500/50" : ""
             }`}
           >
+            {errorMessage && (
+              <div className="p-3 rounded-xl border border-red-500/20 bg-red-500/5 text-red-400 text-xs flex justify-between items-center font-mono animate-in fade-in slide-in-from-top-1 duration-200">
+                <span>{errorMessage}</span>
+                <button
+                  type="button"
+                  onClick={() => setErrorMessage(null)}
+                  className="text-red-400/50 hover:text-red-400 cursor-pointer"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
             <div className="space-y-1.5">
               <label htmlFor="edit-title" className="text-xs font-medium text-zinc-400 font-mono">
                 Title

@@ -25,6 +25,8 @@ export default function Dashboard({ initialTodos }: DashboardProps) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
   const formRef = useRef<HTMLFormElement>(null);
+  const [todoToDelete, setTodoToDelete] = useState<Todo | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setTodos(initialTodos);
@@ -38,6 +40,7 @@ export default function Dashboard({ initialTodos }: DashboardProps) {
     }
 
     setSubmitting(true);
+    setErrorMessage(null);
     try {
       const result = await createTodoAction(formData);
       if (result.success) {
@@ -45,10 +48,10 @@ export default function Dashboard({ initialTodos }: DashboardProps) {
         setDescription("");
         formRef.current?.reset();
       } else {
-        alert(result.error || "Failed to create task");
+        setErrorMessage(result.error || "Failed to create task");
       }
     } catch (err: any) {
-      alert(err.message || "Failed to create task");
+      setErrorMessage(err.message || "Failed to create task");
     } finally {
       setSubmitting(false);
     }
@@ -76,10 +79,7 @@ export default function Dashboard({ initialTodos }: DashboardProps) {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    const confirmDelete = confirm("Are you sure you want to delete this task?");
-    if (!confirmDelete) return;
-
+  const handleDeleteConfirm = async (id: string) => {
     setTodos((prev) => prev.filter((todo) => todo.id !== id));
 
     try {
@@ -164,6 +164,20 @@ export default function Dashboard({ initialTodos }: DashboardProps) {
               formError ? "animate-shake border-red-500/50" : ""
             }`}
           >
+            {errorMessage && (
+              <div className="p-3 rounded-xl border border-red-500/20 bg-red-500/5 text-red-400 text-xs flex justify-between items-center font-mono animate-in fade-in slide-in-from-top-1 duration-200">
+                <span>{errorMessage}</span>
+                <button
+                  type="button"
+                  onClick={() => setErrorMessage(null)}
+                  className="text-red-400/50 hover:text-red-400 cursor-pointer"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
             <div className="space-y-1.5">
               <label htmlFor="title" className="text-xs font-medium text-zinc-400">
                 Task Title *
@@ -325,7 +339,7 @@ export default function Dashboard({ initialTodos }: DashboardProps) {
                     </Link>
 
                     <button
-                      onClick={() => handleDelete(todo.id)}
+                      onClick={() => setTodoToDelete(todo)}
                       className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/5 border border-transparent hover:border-red-500/10 transition-all cursor-pointer"
                       title="Delete task"
                     >
@@ -340,6 +354,49 @@ export default function Dashboard({ initialTodos }: DashboardProps) {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {todoToDelete && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-zinc-950 border border-zinc-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-base font-semibold text-zinc-100">Delete Task</h3>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-sm text-zinc-400">
+                Are you sure you want to delete <span className="text-zinc-200 font-medium font-sans">"{todoToDelete.title}"</span>?
+              </p>
+              <p className="text-xs text-zinc-500 font-mono">
+                This action is permanent and cannot be undone.
+              </p>
+            </div>
+            
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setTodoToDelete(null)}
+                className="flex-1 py-2 rounded-xl border border-zinc-800 text-zinc-400 font-medium text-xs text-center hover:bg-zinc-900/50 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleDeleteConfirm(todoToDelete.id);
+                  setTodoToDelete(null);
+                }}
+                className="flex-1 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium text-xs hover:shadow-lg hover:shadow-red-600/10 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
