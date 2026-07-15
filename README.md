@@ -2,6 +2,8 @@
 
 A sleek, minimal dark theme productivity application built with Next.js to demonstrate core syllabus concepts.
 
+* **Live Deployed Application**: [todo-seven-phi-78.vercel.app](https://todo-seven-phi-78.vercel.app/)
+
 ## Tech Stack
 * **Framework**: Next.js 16 (App Router)
 * **Runtime / Compiler**: React 19, Turbopack
