@@ -12,7 +12,8 @@ A sleek, minimal dark theme productivity application built with Next.js to demon
 ## Key Features
 * **Create Tasks**: Submitted using Next.js Server Actions with immediate page revalidation.
 * **Edit Tasks**: Update title and description using a dedicated dynamic page and API route.
-* **Toggle & Delete**: Asynchronous client-side state toggles and deletions.
+* **Toggle & Custom Delete**: Asynchronous client-side state toggles and custom-built modal deletion confirmations (replacing native browser `confirm()` prompts).
+* **Inline Form Error Alerts**: Integrated dismissible warnings within forms to gracefully display server/validation messages (replacing browser native `alert()` popups).
 * **Productivity Guides**: Pre-rendered static documentation pages with incremental background regeneration.
 * **Premium Design System**: Obsidian dark palette with glassmorphism, responsive grid dashboard, and custom animations.
 
