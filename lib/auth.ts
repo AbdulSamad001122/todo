@@ -2,8 +2,14 @@ import { cookies } from "next/headers";
 import crypto from "crypto";
 
 const ALGORITHM = "aes-256-gcm";
-const SECRET_KEY = process.env.SESSION_SECRET!;
-const KEY = crypto.createHash("sha256").update(SECRET_KEY).digest();
+
+function getSessionKey(): Buffer {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) {
+    throw new Error("SESSION_SECRET is not set in the environment variables");
+  }
+  return crypto.createHash("sha256").update(secret).digest();
+}
 
 export function hashPassword(password: string): string {
   const randomSalt = crypto.randomBytes(16).toString("hex");
@@ -24,7 +30,7 @@ export function verifyPassword(password: string, storedValue: string): boolean {
 
 export function encryptSession(payload: any): string {
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv(ALGORITHM, KEY, iv);
+  const cipher = crypto.createCipheriv(ALGORITHM, getSessionKey(), iv);
   let encrypted = cipher.update(JSON.stringify(payload), "utf8", "hex");
   encrypted += cipher.final("hex");
   const authTag = cipher.getAuthTag().toString("hex");
@@ -38,7 +44,7 @@ export function decryptSession(token: string): any | null {
     const iv = Buffer.from(ivHex, "hex");
     const encrypted = Buffer.from(encryptedHex, "hex");
     const authTag = Buffer.from(authTagHex, "hex");
-    const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv);
+    const decipher = crypto.createDecipheriv(ALGORITHM, getSessionKey(), iv);
     decipher.setAuthTag(authTag);
     let decrypted = decipher.update(encrypted, undefined, "utf8");
     decrypted += decipher.final("utf8");
