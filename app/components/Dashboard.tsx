@@ -30,6 +30,7 @@ export default function Dashboard({ initialTodos }: DashboardProps) {
 
   useEffect(() => {
     setTodos(initialTodos);
+    setSubmitting(false);
   }, [initialTodos]);
 
   const handleSubmitAction = async (formData: FormData) => {
@@ -49,10 +50,10 @@ export default function Dashboard({ initialTodos }: DashboardProps) {
         formRef.current?.reset();
       } else {
         setErrorMessage(result.error || "Failed to create task");
+        setSubmitting(false);
       }
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to create task");
-    } finally {
       setSubmitting(false);
     }
   };
@@ -159,7 +160,11 @@ export default function Dashboard({ initialTodos }: DashboardProps) {
           </div>
           <form
             ref={formRef}
-            action={handleSubmitAction}
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              handleSubmitAction(formData);
+            }}
             className={`p-5 rounded-2xl bg-zinc-900/30 border border-zinc-900 space-y-4 transition-all duration-200 ${
               formError ? "animate-shake border-red-500/50" : ""
             }`}
@@ -211,13 +216,16 @@ export default function Dashboard({ initialTodos }: DashboardProps) {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-500 active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none shadow-lg shadow-indigo-600/10 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-xl bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-500 active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none shadow-lg shadow-indigo-600/10 cursor-pointer"
             >
               {submitting ? (
-                <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>Adding Task...</span>
+                </>
               ) : (
                 <>Add Task</>
               )}

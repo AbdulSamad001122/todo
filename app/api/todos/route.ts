@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-
 import { prisma } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 
 export async function GET() {
   try {
-    const todos = await prisma.todo.findMany();
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    const todos = await prisma.todo.findMany({
+      where: {
+        userId: session.userId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
     return NextResponse.json({ success: true, data: todos }, { status: 200 });
   } catch (error) {
-    console.log(error);
     return NextResponse.json(
       {
         success: false,
@@ -21,6 +32,11 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
     const { title, description } = await request.json();
 
     if (!title) {
@@ -34,13 +50,12 @@ export async function POST(request: NextRequest) {
       data: {
         title: title,
         description: description,
+        userId: session.userId,
       },
     });
-    console.log(todo);
 
     return NextResponse.json({ success: true, data: todo }, { status: 201 });
   } catch (error) {
-    console.log(error);
     return NextResponse.json(
       {
         success: false,

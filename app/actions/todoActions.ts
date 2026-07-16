@@ -2,8 +2,14 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { getSession } from "@/lib/auth";
 
 export async function createTodoAction(formData: FormData) {
+  const session = await getSession();
+  if (!session) {
+    return { success: false, error: "You must be logged in to create a task" };
+  }
+
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
 
@@ -16,6 +22,7 @@ export async function createTodoAction(formData: FormData) {
       data: {
         title: title.trim(),
         description: description?.trim() || null,
+        userId: session.userId,
       },
     });
 
